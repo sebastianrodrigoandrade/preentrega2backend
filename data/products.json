@@ -1,0 +1,14 @@
+[
+    {
+      "id": "1",
+      "title": "Producto Inicial",
+      "description": "Descripción del producto inicial",
+      "code": "P001",
+      "price": 100,
+      "status": true,
+      "stock": 50,
+      "category": "Categoría Inicial",
+      "thumbnails": []
+    }
+  ]
+  
