@@ -1,46 +1,51 @@
-const express = require('express');
-const router = express.Router();
-const CartManager = require('../manager/cartManager');
-const ProductManager = require('../manager/productManager');
-const io = require('../app').io; // Importa el servidor de Socket.io
 
-router.get('/:cid', (req, res) => {
-  const { cid } = req.params;
-  const cart = CartManager.getById(cid);
-  if (cart) {
-    res.json(cart.products);
-  } else {
-    res.status(404).json({ error: 'Carrito no encontrado' });
-  }
-});
+import { Router } from "express";
 
-router.post('/', (req, res) => {
-  const newCart = CartManager.create();
+const router = Router();
 
-  // Emitir un evento de WebSocket para notificar a los clientes que se ha creado un nuevo carrito
-  io.emit('cartCreated', newCart);
+import cartManager from "../manager/cartManager.js"
+const manager = new cartManager("./src/data/carts.json");
 
-  res.status(201).json(newCart);
-});
 
-router.post('/:cid/product/:pid', (req, res) => {
-  const { cid, pid } = req.params;
-  const product = ProductManager.getById(pid);
+// para crear un carrito con id y [], 
+router.post("/", async(req, res)=>{
+    try {
+        res.status(201).json(await manager.createCart()); 
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({msg: error.message}); 
+    }
+})
 
-  if (!product) {
-    return res.status(404).json({ error: 'Producto no encontrado' });
-  }
+//lista los productos que pertenecen al acrrito con ese id 
+router.get("/:cid", async(req, res)=>{
+    try {
+        const { cid } = req.params;
+        const cart = await manager.getCartById(cid);
+        if(cart) res.status(201).json(cart);
+        else res.status(404).json({msg: "El carrito no existe"});
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({msg: error.message}); 
+        
+    }
 
-  const updatedCart = CartManager.addProductToCart(cid, pid);
+})
 
-  if (updatedCart) {
-    // Emitir un evento de WebSocket para notificar a los clientes que se ha agregado un producto al carrito
-    io.emit('productAddedToCart', { cartId: cid, productId: pid });
+router.post("/:cid/product/:pid",async(req, res)=>{
+    try {
+        const {cid, pid } = req.params;
+        const cartId = Number(cid);
+        const productId = Number(pid);
+        res.status(200).json(await manager.addProductToCart(cartId, productId));
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({msg: error.message}); 
+    }
 
-    res.status(200).json(updatedCart);
-  } else {
-    res.status(404).json({ error: 'Carrito no encontrado' });
-  }
-});
+})
 
-module.exports = router;
+export default router 

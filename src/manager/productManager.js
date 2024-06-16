@@ -1,63 +1,99 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
 
 class ProductManager {
-  constructor() {
-    this.filePath = path.resolve(__dirname, '../../data/products.json');
-    this.products = this.loadProducts();
-  }
+    constructor(path) {
+        this.path = path;
+        this.products = [];
 
-  loadProducts() {
-    try {
-      const data = fs.readFileSync(this.filePath, 'utf-8');
-      return JSON.parse(data);
-    } catch (error) {
-      return [];
+        if (fs.existsSync(this.path)) {
+            try {
+                this.products = JSON.parse(fs.readFileSync(this.path, 'utf-8'));
+            } catch (error) {
+                console.error('Error al leer el archivo', error);
+                this.products = [];
+            }
+        } else {
+            this.products = [];
+        }
     }
-  }
 
-  saveProducts() {
-    fs.writeFileSync(this.filePath, JSON.stringify(this.products, null, 2));
-  }
+    async addProduct(product) {
+        // Generar nuevo ID autoincremental
+        let newId = 0;
+        if (this.products.length > 0) {
+            newId = this.products[this.products.length - 1].id + 1;
+        } else {
+            product.id = 1;
+        }
 
-  getAll(limit) {
-    return limit ? this.products.slice(0, limit) : this.products;
-  }
+        const newProduct = {
+            id: newId,
+            status: true,
+            ...product
+        };
 
-  getById(id) {
-    return this.products.find(product => product.id === id);
-  }
+        this.products.push(newProduct);
 
-  create(productData) {
-    const newProduct = {
-      id: (this.products.length ? this.products[this.products.length - 1].id + 1 : 1).toString(),
-      ...productData,
-      status: productData.status !== undefined ? productData.status : true
-    };
-    this.products.push(newProduct);
-    this.saveProducts();
-    return newProduct;
-  }
-
-  update(id, productData) {
-    const index = this.products.findIndex(product => product.id === id);
-    if (index !== -1) {
-      this.products[index] = { ...this.products[index], ...productData };
-      this.saveProducts();
-      return this.products[index];
+        try {
+            await this.saveProductsToFile(); // Guardar productos en archivo
+            console.log('Producto agregado con éxito');
+            return newProduct;
+        } catch (error) {
+            console.error('Error al escribir el archivo', error);
+            throw new Error('Error al agregar el producto');
+        }
     }
-    return null;
-  }
 
-  delete(id) {
-    const index = this.products.findIndex(product => product.id === id);
-    if (index !== -1) {
-      this.products.splice(index, 1);
-      this.saveProducts();
-      return true;
+    async saveProductsToFile() {
+        try {
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products, null, '\t'));
+        } catch (error) {
+            console.error('Error al escribir el archivo', error);
+            throw new Error('Error al guardar productos en archivo');
+        }
     }
-    return false;
-  }
+
+    async getProducts(limit) {
+        const productLimit = this.products.slice(0, limit);
+        return productLimit;
+    }
+
+    getProductById(idProduct) {
+        const product = this.products.find((product) => product.id === Number(idProduct));
+        return product || null;
+    }
+
+    async deleteProduct(idProduct) {
+        const index = this.products.findIndex((product) => product.id === Number(idProduct));
+        if (index !== -1) {
+            this.products.splice(index, 1);
+            try {
+                await this.saveProductsToFile();
+                console.log('Producto eliminado exitosamente');
+                return true;
+            } catch (error) {
+                console.error('Error al escribir el archivo', error);
+                throw new Error('Error al eliminar producto');
+            }
+        }
+        return false;
+    }
+
+    async updateProduct(idProduct, updatedProduct) {
+        const index = this.products.findIndex((product) => product.id === Number(idProduct));
+        if (index !== -1) {
+            this.products[index] = { ...this.products[index], ...updatedProduct };
+            try {
+                await this.saveProductsToFile();
+                console.log('Producto actualizado exitosamente');
+                return this.products[index];
+            } catch (error) {
+                console.error('Error al escribir el archivo', error);
+                throw new Error('Error al actualizar producto');
+            }
+        }
+        return null;
+    }
 }
 
-module.exports = new ProductManager();
+export default ProductManager;
