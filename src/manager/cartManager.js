@@ -30,7 +30,7 @@ class CartManager {
         this.carts.push(newCart);
 
         try {
-            await this.saveCartsToFile(); // Guardar carritos en archivo
+            await this.saveCartsToFile(); 
             console.log('Carrito creado con éxito');
             return newCart;
         } catch (error) {

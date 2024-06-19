@@ -18,7 +18,6 @@ class ProductManager {
     }
 
     async addProduct(product) {
-        // Generar nuevo ID autoincremental
         let newId = 0;
         if (this.products.length > 0) {
             newId = this.products[this.products.length - 1].id + 1;
@@ -35,7 +34,7 @@ class ProductManager {
         this.products.push(newProduct);
 
         try {
-            await this.saveProductsToFile(); // Guardar productos en archivo
+            await this.saveProductsToFile(); 
             console.log('Producto agregado con éxito');
             return newProduct;
         } catch (error) {

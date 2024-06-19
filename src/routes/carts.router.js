@@ -7,7 +7,7 @@ import cartManager from "../manager/cartManager.js"
 const manager = new cartManager("./src/data/carts.json");
 
 
-// para crear un carrito con id y [], 
+// crear un carrito 
 router.post("/", async(req, res)=>{
     try {
         res.status(201).json(await manager.createCart()); 
@@ -18,7 +18,7 @@ router.post("/", async(req, res)=>{
     }
 })
 
-//lista los productos que pertenecen al acrrito con ese id 
+// productos del acrrito con  id  
 router.get("/:cid", async(req, res)=>{
     try {
         const { cid } = req.params;

@@ -5,7 +5,6 @@ export const productValidator = (req, res, next) => {
         return res.status(400).json({ msg: "Please provide all required fields" });
     }
 
-    // If all required fields are present, set default status to true
     req.body.status = true;
     next();
-};
+};  

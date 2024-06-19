@@ -11,18 +11,18 @@ const productManager = new ProductManager("./src/data/products.json");
 
 const app = express();
 
-app.use(express.json()); // para recibir datos json 
-app.use(express.urlencoded({extended: true})); // mid para datos que se envian por params
-app.use(express.static(`${__dirname}/public`)); // si no lo agrego no funcionan los style
+app.use(express.json()); 
+app.use(express.urlencoded({extended: true})); 
+app.use(express.static(`${__dirname}/public`)); 
 
 app.use("/api/cart", cartsRouter); 
 app.use("/api/products", productsRouter)
 
-app.engine('handlebars', handlebars.engine()); //configuración de hds 
-app.set('view engine', 'handlebars'); //mor de plantilla a utilizar 
-app.set('views', `${__dirname}/views`); // ubicación de la carpeta para las vistas 
+app.engine('handlebars', handlebars.engine()); 
+app.set('view engine', 'handlebars'); 
+app.set('views', `${__dirname}/views`);
 
-app.use('/', viewRouter); //enrutador de vistas
+app.use('/', viewRouter); 
 
 
 const PORT = 8080; 
